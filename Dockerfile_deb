@@ -1,0 +1,31 @@
+# Stage 1: Build stage
+FROM node:20-bookworm-slim AS build
+
+# Install dependencies needed for building
+RUN apt update && apt install -y python3 g++ build-essential jq
+
+# Set the working directory
+WORKDIR /usr/app
+# Copy the application code
+COPY ./app /usr/app
+# Run the install script (it installs global npm packages)
+RUN ./install.sh
+
+
+FROM node:20-bookworm-slim
+# Install jq in the final image
+RUN apt update && apt install -y jq && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
+WORKDIR /usr/app
+
+# Copy the application files from the build stage
+COPY --from=build /usr/app /usr/app
+
+# Copy global npm packages and binaries from the build stage
+COPY --from=build /usr/local/lib/node_modules /usr/local/lib/node_modules
+COPY --from=build /usr/local/bin /usr/local/bin
+
+# Set the entrypoint
+ENTRYPOINT [ "/bin/bash"]

@@ -1,0 +1,36 @@
+# Stage 1: Build stage
+FROM node:20-alpine AS build
+
+# Install dependencies needed for building
+RUN apk add --no-cache python3 g++ make jq
+
+# Set the working directory
+WORKDIR /usr/app
+
+# Copy the application code
+COPY ./app /usr/app
+
+# Run the install script (assuming it installs global npm packages)
+RUN ./install.sh
+
+# Stage 2: Final stage
+FROM node:20-alpine
+
+# Install jq
+RUN apk add --no-cache jq bash
+
+# Set the working directory
+WORKDIR /usr/app
+
+# Copy the application files from the build stage
+COPY --from=build /usr/app /usr/app
+
+# Copy global npm packages and binaries from the build stage
+COPY --from=build /usr/local/lib/node_modules /usr/local/lib/node_modules
+COPY --from=build /usr/local/bin /usr/local/bin
+
+# Clean up unnecessary files
+RUN rm -rf /usr/app/tmp /usr/app/logs
+
+# Set the entrypoint
+ENTRYPOINT [ "/bin/bash"]
