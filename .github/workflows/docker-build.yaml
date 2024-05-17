@@ -29,6 +29,7 @@ jobs:
         context: .
         file: Dockerfile_alpine
         push: true
+        platforms: linux/amd64,linux/arm64
         tags: shawnsarwar/hoppscotch-cli:alpine-${{ env.LIB_VERSION }}
     -
       name: Build and push
@@ -37,4 +38,5 @@ jobs:
         context: .
         file: Dockerfile_deb
         push: true
+        platforms: linux/amd64,linux/arm64
         tags: shawnsarwar/hoppscotch-cli:bookworm-slim-${{ env.LIB_VERSION }}
